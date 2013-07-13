@@ -49,7 +49,7 @@ class JFormRuleCpf extends JFormRule
 		}
 
 		// Initialiase variables.
-		$cpf      = preg_replace("/[^0-9]/", "", $value);
+		$cpf      = preg_replace('/[^0-9]/', '', $value);
 		$digitOne = 0;
 		$digitTwo = 0;
 
