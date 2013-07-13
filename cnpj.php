@@ -11,24 +11,16 @@
 defined('_JEXEC') or die;
 
 /**
- * JFormRule for com_component to make sure the CPF if is valid.
+ * JFormRule for com_component to make sure the CNPJ if is valid.
  *
  * @package     Component
  * @subpackage  com_component
  * @since       3.1
  */
-class JFormRuleCpf extends JFormRule
+class JFormRuleCnpj extends JFormRule
 {
 	/**
-	 * The regular expression to use in testing a form field value.
-	 *
-	 * @var     string
-	 * @since   3.1
-	 */
-	protected $regex = '/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/';
-
-	/**
-	 * Method to test for a valid CPF.
+	 * Method to test for a valid CNPJ.
 	 *
 	 * @param   SimpleXMLElement  &$element  The SimpleXMLElement object representing the <field /> tag for the form field object.
 	 * @param   mixed             $value     The form field value to validate.
@@ -44,40 +36,38 @@ class JFormRuleCpf extends JFormRule
 	 */
 	public function test(&$element, $value, $group = null, &$input = null, &$form = null)
 	{
-		// Test the value against the regular expression.
-		if (preg_match($this->regex, $value) == false)
+		// Initialiase variables.
+		$cnpj = preg_replace('/[^0-9]/', '', $value);
+
+		if (strlen($cnpj) <> 14)
 		{
 			return false;
 		}
 
-		// Initialiase variables.
-		$cpf      = preg_replace('/[^0-9]/', '', $value);
-		$digitOne = 0;
-		$digitTwo = 0;
+		$calcOne = 0;
+		$calcTwo = 0;
 
 		// Check first digit.
-		for ($i = 0, $x = 10; $i <= 8; $i++, $x--)
+		for ($i = 0, $x = 5; $i <= 11; $i++, $x--)
 		{
-			$digitOne += $cpf[$i] * $x;
+			$x         = ($x < 2) ? 9 : $x;
+			$numberOne = substr($cnpj, $i, 1);
+			$calcOne   += $numberOne * $x;
 		}
-
-		$calcOne = (($digitOne % 11) < 2) ? 0 : 11 - ($digitOne % 11);
 
 		// Check second digit.
-		for ($i = 0, $x = 11; $i <= 9; $i++, $x--)
+		for ($i = 0, $x = 6; $i <= 12; $i++, $x--)
 		{
-			if (str_repeat($i, 11) == $cpf)
-			{
-				return false;
-			}
-
-			$digitTwo += $cpf[$i] * $x;
+			$x         = ($x < 2) ? 9 : $x;
+			$numberTwo = substr($cnpj, $i, 1);
+			$calcTwo   += $numberTwo * $x;
 		}
 
-		$calcTwo = (($digitTwo % 11) < 2) ? 0 : 11 - ($digitTwo % 11);
+		$digitOne = (($calcOne % 11) < 2) ? 0 : 11 - ($calcOne % 11);
+		$digitTwo = (($calcTwo % 11) < 2) ? 0 : 11 - ($calcTwo % 11);
 
-		// Test the CPF if is valid.
-		if ($calcOne <> $cpf[9] || $calcTwo <> $cpf[10])
+		// Test the CNPJ if is valid.
+		if ($digitOne <> substr($cnpj, 12, 1) || $digitTwo <> substr($cnpj, 13, 1))
 		{
 			return false;
 		}
